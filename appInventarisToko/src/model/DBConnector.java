@@ -6,7 +6,7 @@ package model;
 
 /**
  *
- * @author IKHWANUL HASANI
+ * 
  */
 public class DBConnector {
     
