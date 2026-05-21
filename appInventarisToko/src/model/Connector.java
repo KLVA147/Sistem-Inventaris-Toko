@@ -6,8 +6,8 @@ package model;
 
 /**
  *
- * 
+ * @author IKHWANUL HASANI
  */
-public class DBConnector {
+public class Connector {
     
 }
