@@ -4,14 +4,16 @@
  */
 package controller;
 
-import model.Barang;
+import model.Connector;
+import java.sql.*;
 
 /**
  *
- * @author umair
+ * @author IKHWANUL HASANI
  */
-public class Minuman extends Barang {
-    public Minuman() {
-       
+public class placeholder {
+    public placeholder(Connection aa)
+    {
+        System.out.println("bhewfewf");
     }
 }
