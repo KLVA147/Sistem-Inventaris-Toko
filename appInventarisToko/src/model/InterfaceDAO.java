@@ -4,11 +4,6 @@
  */
 package model;
 
-/**
- *
- * @author IKHWANUL HASANI
- */
-
 import java.util.List;
 
 public interface InterfaceDAO <T> {
