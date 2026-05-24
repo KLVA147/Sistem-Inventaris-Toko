@@ -4,28 +4,68 @@
  */
 package model.Produk;
 
-/**
- *
- * @author IKHWANUL HASANI
- */
 public class ModelProduk {
-    private static String id;
-    private static String nama;
-    private static int harga;
-    private static int stok;
-    
-    public ModelProduk(String nama, int harga, int stok) {
-        this.nama = nama;
-        this.harga = harga;
-        this.stok = stok;
+    private Integer id;
+    private String  kodeProduk;
+    private String  nama;
+    private Integer idKategori;
+    private String  namaKategori;   
+    private double  hargaBeli;
+    private double  hargaJual;
+    private int     stok;
+    private int     stokMinimum;
+    private String  satuan;
+    private String  deskripsi;
+    private boolean aktif;
+
+    public ModelProduk() { this.aktif = true; }
+
+    // ---- Getters / Setters ----
+    public Integer getId()                   { return id; }
+    public void    setId(Integer id)         { this.id = id; }
+
+    public String  getKodeProduk()                   { return kodeProduk; }
+    public void    setKodeProduk(String kp)          { this.kodeProduk = kp; }
+
+    public String  getNama()                    { return nama; }
+    public void    setNama(String nama)         { this.nama = nama; }
+
+    public Integer getIdKategori()               { return idKategori; }
+    public void    setIdKategori(Integer id)     { this.idKategori = id; }
+
+    public String  getNamaKategori()             { return namaKategori; }
+    public void    setNamaKategori(String nk)    { this.namaKategori = nk; }
+
+    public double  getHargaBeli()                   { return hargaBeli; }
+    public void    setHargaBeli(double h)           { this.hargaBeli = h; }
+
+    public double  getHargaJual()                   { return hargaJual; }
+    public void    setHargaJual(double h)           { this.hargaJual = h; }
+
+    public int     getStok()                { return stok; }
+    public void    setStok(int s)           { this.stok = s; }
+
+    public int     getStokMinimum()                 { return stokMinimum; }
+    public void    setStokMinimum(int sm)           { this.stokMinimum = sm; }
+
+    public String  getSatuan()                  { return satuan; }
+    public void    setSatuan(String s)          { this.satuan = s; }
+
+    public String  getDeskripsi()               { return deskripsi; }
+    public void    setDeskripsi(String d)       { this.deskripsi = d; }
+
+    public boolean isAktif()                    { return aktif; }
+    public void    setAktif(boolean a)          { this.aktif = a; }
+
+    /** Business logic: stok rendah jika di bawah stok minimum */
+    public boolean isStokRendah() { return stok <= stokMinimum; }
+
+    /** Hitung margin keuntungan */
+    public double getMargin() {
+        if (hargaBeli == 0) return 0;
+        return ((hargaJual - hargaBeli) / hargaBeli) * 100;
     }
-    
-    public String getNama() {return nama;}
-    public void setNama(String nama){this.nama = nama;}
-    public String getId() {return id;}
-    public void setId(String id){this.id = id;}
-    public int getStok() {return stok;}
-    public void setStok(int nama){this.stok = stok;}
-    public int getHarga() {return harga;}
-    public void setHarga(int harga){this.harga = harga;}
+
+    @Override
+    public String toString() { return kodeProduk + " - " + nama; }
 }
