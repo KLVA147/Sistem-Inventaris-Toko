@@ -8,7 +8,7 @@ import java.sql.*;
 
 public class Connector {
     static String jdbc_driver = "com.mysql.cj.jdbc.Driver";
-    static String nama_db = "transportasi_db";
+    static String nama_db = "inventaris_toko";
     static String url_db = "jdbc:mysql://localhost:3306/" + nama_db;
     static String username_db = "root";
     static String password_db = "";

@@ -4,13 +4,16 @@
  */
 package Main;
 
-import model.Connector;
-import controller.*;
+import view.Login.*;
+import javax.swing.SwingUtilities;
 
 public class AppInventarisToko {
     public static void main(String[] args) {
         // TODO code application logic here
         System.out.println("check");
-        placeholder p = new placeholder(Connector.Connect());
+        SwingUtilities.invokeLater(() -> {
+            System.out.println("[Main] Starting on thread: " + Thread.currentThread().getName());
+            new LoginView();
+        });
     }
 }
