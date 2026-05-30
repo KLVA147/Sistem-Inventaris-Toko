@@ -2,12 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
  */
-package model.dao;
+package model.Kategori;
 
-/**
- *
- * @author umair
- */
-public interface LoginDAO {
-    boolean loginValidasi(String username, String password);
+import model.InterfaceDAO;
+
+public interface InterfaceDAOKategori extends InterfaceDAO<ModelKategori> {
+    boolean namaExists(String nama);
 }

@@ -4,71 +4,66 @@
  */
 package controller;
 
-import model.repository.FrozenFoodRepository;
-import model.repository.MakananRepository;
-import model.repository.MinumanRepository;
-import model.repository.SabunRepository;
-import model.repository.Login;
-import view.MainMenuView;
-import view.LoginView;
-import model.dao.*;
-import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import model.User.DAOUser;
+import model.User.ModelUser;
+import view.login.LoginView;
+import view.MainMenuView;
+
 /**
  *
  * @author umair
  */
 public class LoginController {
-    private LoginView view;
-    private Login model;
-    private BarangDAO barangDao;
-    private TransaksiDAO transaksiDao;
-    private MakananRepository mknRepo;
-    private MinumanRepository mnmRepo;
-    private FrozenFoodRepository fzRepo;
-    private SabunRepository sbRepo;
+    private LoginView loginView;
+    private DAOUser daoUser;
 
-    public LoginController(LoginView loginView, Login model, BarangDAO barangDao, 
-                           TransaksiDAO transaksiDao,
-                           MakananRepository mknRepo, 
-                           MinumanRepository mnmRepo, FrozenFoodRepository fzRepo, SabunRepository sbRepo ) {
-        this.view = loginView;
-        this.model = model;
-        this.barangDao = barangDao;
-        this.transaksiDao = transaksiDao;
-        this.mknRepo = mknRepo;
-        this.mnmRepo = mnmRepo;
-        this.fzRepo = fzRepo;
-        this.sbRepo = sbRepo;
+    public LoginController(LoginView loginView, DAOUser daoUser) {
+        this.loginView = loginView;
+        this.daoUser = daoUser;
 
-        this.view.btnLogin.addActionListener(e -> prosesLogin());
+        // Menambahkan listener tombol masuk di view
+        this.loginView.addLoginListener(new LoginListener());
     }
 
-    private void prosesLogin() {
-        String username = view.txtUsername.getText().trim();
-        String password = new String(view.txtPassword.getPassword());
-        
-        if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Username dan Password tidak boleh kosong!", "Peringatan", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+    private class LoginListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String username = loginView.getUsername();
+            String password = loginView.getPassword();
 
-        boolean isUserValid = model.loginValidasi(username, password);
+            // Validasi input kosong sederhana
+            if (username.isEmpty() || password.isEmpty()) {
+                loginView.tampilkanPesanGagal("Username atau Password tidak boleh kosong!");
+                return;
+            }
 
-        if (isUserValid) {
-            JOptionPane.showMessageDialog(view, "Login Berhasil! Selamat Datang.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
-     
-            view.dispose();
-            
-            MainMenuView menuView = new MainMenuView();
-            new MainMenuController(menuView, barangDao, transaksiDao, mknRepo, mnmRepo, fzRepo, sbRepo); 
-            menuView.setVisible(true); 
-            
-        } else {
-            JOptionPane.showMessageDialog(view, "Username atau Password salah!", "Gagal Login", JOptionPane.ERROR_MESSAGE);
+            // Lakukan pengecekan ke database melalui DAOUser
+            ModelUser userLogin = daoUser.login(username, password);
 
-            view.txtPassword.setText("");
+            if (userLogin != null) {
+                // Periksa apakah status user aktif
+                if (!userLogin.isAktif()) {
+                    loginView.tampilkanPesanGagal("Akun Anda dinonaktifkan. Hubungi Administrator!");
+                    return;
+                }
+
+                // Sesuai Request: Berikan message login sukses yang ditambah nama role yang login
+                loginView.tampilkanPesanSukses(userLogin.getNamaLengkap(), userLogin.getRole());
+
+                // Tutup jendela login
+                loginView.dispose();
+
+                // Buka Main Menu Frame beserta Controller utamanya
+                MainMenuView mainMenuView = new MainMenuView();
+                MainMenuController mainMenuController = new MainMenuController(mainMenuView, userLogin);
+                
+                // Tampilkan Jendela Utama Aplikasi
+                mainMenuView.setVisible(true);
+            } else {
+                loginView.tampilkanPesanGagal("Username atau Password salah!");
+            }
         }
     }
 }

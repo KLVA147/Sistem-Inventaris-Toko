@@ -4,201 +4,170 @@
  */
 package controller;
 
-import model.repository.FrozenFoodRepository;
-import model.repository.MakananRepository;
-import model.repository.MinumanRepository;
-import model.repository.SabunRepository;
-import model.objects.*;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
-import view.AllDataPanel;
-import view.AllDataDialog;
-import model.objects.*;
+import javax.swing.JOptionPane;
+import model.User.ModelUser;
+import model.Produk.DAOProduk;
+import model.Produk.ModelProduk;
+import model.Produk.ModelTableProduk;
+import model.Kategori.DAOKategori;
+import model.Kategori.ModelKategori;
+import view.data.AllDataPanel;
+import view.MainMenuView;
+import view.data.AddKategoriDialog;
+import view.data.AddProdukDialog;
+
 /**
  *
  * @author umair
  */
 public class AllDataController {
     private AllDataPanel view;
-    private MakananRepository makananRepo;
-    private MinumanRepository minumanRepo; // Anggap sudah dibuat
-    private FrozenFoodRepository frozenRepo;
-    private SabunRepository sabunRepo;
+    private ModelUser userAktif;
+    private MainMenuView mainFrame;
 
-    public AllDataController(AllDataPanel view, MakananRepository mknRepo, MinumanRepository mnmRepo,
-                            FrozenFoodRepository fzRepo, SabunRepository sbRepo) {
+    private DAOProduk daoProduk;
+    private DAOKategori daoKategori;
+    private ModelTableProduk modelTableProduk;
+
+    public AllDataController(AllDataPanel view, ModelUser userAktif, MainMenuView mainFrame) {
         this.view = view;
-        
-        this.makananRepo = mknRepo;
-        this.minumanRepo = mnmRepo;
-        this.frozenRepo = fzRepo;
-        this.sabunRepo = sbRepo;
-        
-        // Pasang action listener ke tombol-tombol kategori
-        this.view.btnMakanan.addActionListener(e -> tampilkanDialogKategori("Makanan"));
-        this.view.btnMinuman.addActionListener(e -> tampilkanDialogKategori("Minuman"));
-        this.view.btnFrozenFood.addActionListener(e -> tampilkanDialogKategori("Frozen Food"));
-        this.view.btnSabun.addActionListener(e -> tampilkanDialogKategori("Sabun & Kosmetik"));
+        this.userAktif = userAktif;
+        this.mainFrame = mainFrame;
+
+        this.daoProduk = new DAOProduk();
+        this.daoKategori = new DAOKategori();
+
+        initListeners();
+        refreshTabelProduk();
+        refreshTabelKategori();
+        aturHakAkses();
     }
 
-    private void tampilkanDialogKategori(String kategori) {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(view);
-        AllDataDialog dialog = new AllDataDialog(parentFrame, kategori);
+    private void initListeners() {
+        view.btnRefreshKategori.addActionListener(e -> refreshTabelKategori());
 
-        tampilkanDataKeTabel(dialog.tableModel, kategori);
+        view.btnTambahKategori.addActionListener(e -> {
+            JOptionPane.showMessageDialog(mainFrame, "Membuka Form Tambah Kategori Baru.", "Pemberitahuan", JOptionPane.WARNING_MESSAGE);
+            AddKategoriDialog dialog = new AddKategoriDialog(mainFrame);
+            AddKategoriController ctrl = new AddKategoriController(dialog);
+            dialog.setVisible(true);
+            if (ctrl.isSukses()) refreshTabelKategori();
+        });
 
-        dialog.btnTambah.addActionListener(e -> aksiTambah(dialog, kategori));
-        dialog.btnEdit.addActionListener(e -> aksiEdit(dialog, kategori));
-        dialog.btnUpdateStok.addActionListener(e -> aksiUpdateStok(dialog, kategori));
-        dialog.btnHapus.addActionListener(e -> aksiHapus(dialog, kategori));
+        view.btnTambahProduk.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                List<ModelKategori> listKategori = daoKategori.getAll();
+                if (listKategori.isEmpty()) {
+                    JOptionPane.showMessageDialog(mainFrame, "Kategori kosong! Diwajibkan mengisi kategori terbaru terlebih dahulu.", "Aksi Ditolak", JOptionPane.ERROR_MESSAGE);
+                    view.btnTambahKategori.doClick();
+                    return;
+                }
 
-        dialog.setVisible(true);
-    }
-    
-    // ================= LOGIKA AKSI MANAGEMENT BARANG =================
-    
-    private void tampilkanDataKeTabel(DefaultTableModel model, String kategori) {
-        model.setRowCount(0); 
-        List<Barang> daftarBarang = null; 
+                JOptionPane.showMessageDialog(mainFrame, "Membuka Form Tambah Produk Baru.", "Pemberitahuan", JOptionPane.WARNING_MESSAGE);
+                AddProdukDialog prodDialog = new AddProdukDialog(mainFrame);
+                
+                for (ModelKategori kat : listKategori) prodDialog.cbKategori.addItem(kat);
 
-        if (kategori.equals("Makanan")) {
-            daftarBarang = makananRepo.ambilSemuaMakanan();
-        } else if (kategori.equals("Minuman")) {
-            daftarBarang = minumanRepo.ambilSemuaMinuman();
-        } else if (kategori.equals("Frozen Food")) {
-            daftarBarang = frozenRepo.ambilSemuaFrozenFood();
-        } else if (kategori.equals("Sabun")) {
-            daftarBarang = sabunRepo.ambilSemuaSabun();
-        }
+                if(prodDialog.cbKategori.getSelectedItem() != null) {
+                    ModelKategori selected = (ModelKategori) prodDialog.cbKategori.getSelectedItem();
+                    prodDialog.lblPrefix.setText(selected.getKodePrefix());
+                }
+                
+                prodDialog.cbKategori.addActionListener(ev -> {
+                    ModelKategori selected = (ModelKategori) prodDialog.cbKategori.getSelectedItem();
+                    if(selected != null) {
+                        prodDialog.lblPrefix.setText(selected.getKodePrefix());
+                    }
+                });
 
-        if (daftarBarang != null) {
-            for (Barang b : daftarBarang) {
-                // Polimorfisme: b.getId() & b.getNama() dipanggil dari object induk Barang
-                model.addRow(new Object[]{b.getId(), b.getNama(), b.getStok(), b.getHarga()});
+                prodDialog.btnSimpan.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ev) {
+                        try {
+                            String nomorKode = prodDialog.txtKodeAngka.getText().trim();
+                            String nama = prodDialog.txtNama.getText().trim();
+                            ModelKategori katTerpilih = (ModelKategori) prodDialog.cbKategori.getSelectedItem();
+                            
+                            String fullKodeProduk = katTerpilih.getKodePrefix() + nomorKode;
+
+                            double hBeli = Double.parseDouble(prodDialog.txtHargaBeli.getText());
+                            double hJual = Double.parseDouble(prodDialog.txtHargaJual.getText());
+                            int stok = Integer.parseInt(prodDialog.txtStok.getText());
+                            int stokMin = Integer.parseInt(prodDialog.txtStokMin.getText());
+                            String satuan = prodDialog.txtSatuan.getText().trim();
+
+                            if (nomorKode.isEmpty() || nama.isEmpty()) {
+                                JOptionPane.showMessageDialog(prodDialog, "Field input tidak boleh kosong!");
+                                return;
+                            }
+
+                            if(daoProduk.kodeExists(fullKodeProduk)) {
+                                JOptionPane.showMessageDialog(prodDialog, "Kode produk " + fullKodeProduk + " sudah terdaftar!");
+                                return;
+                            }
+
+                            ModelProduk p = new ModelProduk();
+                            p.setKodeProduk(fullKodeProduk); 
+                            p.setNama(nama);
+                            p.setIdKategori(katTerpilih.getId());
+                            p.setHargaBeli(hBeli); p.setHargaJual(hJual);
+                            p.setStok(stok); p.setStokMinimum(stokMin);
+                            p.setSatuan(satuan); p.setDeskripsi("Produk Baru");
+
+                            daoProduk.insert(p);
+                            JOptionPane.showMessageDialog(prodDialog, "Produk Bersiril Disimpan!");
+                            prodDialog.dispose();
+                            refreshTabelProduk();
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(prodDialog, "Validasi input angka gagal!");
+                        }
+                    }
+                });
+                prodDialog.setVisible(true);
             }
-        }
-    }
+        });
 
-    private void aksiTambah(AllDataDialog dialog, String kategori) {
-        String id = JOptionPane.showInputDialog(dialog, "Masukkan ID Barang:");
-        if (id == null || id.trim().isEmpty()) return;
-        String nama = JOptionPane.showInputDialog(dialog, "Masukkan Nama Barang:");
-        if (nama == null || nama.trim().isEmpty()) return;
-
-        try {
-            int harga = Integer.parseInt(JOptionPane.showInputDialog(dialog, "Harga Satuan:"));
-            int stok = Integer.parseInt(JOptionPane.showInputDialog(dialog, "Stok Awal:"));
-
-            if (kategori.equals("Makanan")) {
-                String expired = JOptionPane.showInputDialog(dialog, "Tanggal Expired (YYYY-MM-DD):");
-                Makanan mkn = new Makanan(id.toUpperCase(), nama, harga, stok, expired);
-                makananRepo.tambahMakanan(mkn);
-            } else if (kategori.equals("Minuman")) {
-                Minuman mnm = new Minuman(id.toUpperCase(), nama, harga, stok);
-                minumanRepo.tambahMinuman(mnm);
-            } else if (kategori.equals("Frozen Food")) {
-                FrozenFood fz = new FrozenFood(id.toUpperCase(), nama, harga, stok);
-                frozenRepo.tambahFrozenFood(fz);
-            } else if (kategori.equals("Sabun")) {
-                Sabun sb = new Sabun(id.toUpperCase(), nama, harga, stok);
-                sabunRepo.tambahSabun(sb);
+        view.btnHapusProduk.addActionListener(e -> {
+            int row = view.tabelProduk.getSelectedRow();
+            if (row >= 0) {
+                ModelProduk p = modelTableProduk.getProdukAt(row);
+                if (JOptionPane.showConfirmDialog(mainFrame, "Hapus " + p.getNama() + "?") == JOptionPane.YES_OPTION) {
+                    daoProduk.delete(p.getId());
+                    refreshTabelProduk();
+                }
             }
-
-            tampilkanDataKeTabel(dialog.tableModel, kategori);
-            JOptionPane.showMessageDialog(dialog, "Data berhasil disimpan!");
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(dialog, "Format angka tidak valid!");
-        }
-    }
-
-    private void aksiEdit(AllDataDialog dialog, String kategori) {
-        int row = dialog.tableProduk.getSelectedRow();
-        if (row == -1) return;
-
-        String id = dialog.tableModel.getValueAt(row, 0).toString();
-        String namaLama = dialog.tableModel.getValueAt(row, 1).toString();
-        String hargaLama = dialog.tableModel.getValueAt(row, 3).toString();
-
-        String namaBaru = JOptionPane.showInputDialog(dialog, "Ubah Nama Barang:", namaLama);
-        if (namaBaru == null || namaBaru.trim().isEmpty()) return;
-
-        try {
-            int hargaBaru = Integer.parseInt(JOptionPane.showInputDialog(dialog, "Ubah Harga Satuan:", hargaLama));
-            int stokLama = (int) dialog.tableModel.getValueAt(row, 2);
-
-            if (kategori.equals("Makanan")) {
-                Makanan mkn = new Makanan(id, namaBaru, hargaBaru, stokLama, null);
-                makananRepo.ubahMakanan(mkn);
-            } else if (kategori.equals("Minuman")) {
-                Minuman mnm = new Minuman(id, namaBaru, hargaBaru, stokLama);
-                minumanRepo.ubahMinuman(mnm);
-            } else if (kategori.equals("Sabun")) {
-                Sabun sb = new Sabun(id, namaBaru, hargaBaru, stokLama);
-                sabunRepo.ubahSabun(sb);
-            } else if (kategori.equals("Frozen Food")) {
-                FrozenFood fz = new FrozenFood(id, namaBaru, hargaBaru, stokLama);
-                frozenRepo.ubahFrozenFood(fz);
-            }
-            tampilkanDataKeTabel(dialog.tableModel, kategori);
-            JOptionPane.showMessageDialog(dialog, "Data berhasil diperbarui!");
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(dialog, "Harga harus berupa angka!");
-        }
+        });
     }
 
-    private void aksiUpdateStok(AllDataDialog dialog, String kategori) {
-        int row = dialog.tableProduk.getSelectedRow();
-        if (row == -1) return;
+    public void refreshTabelProduk() {
+        modelTableProduk = new ModelTableProduk(daoProduk.getAll());
+        view.tabelProduk.setModel(modelTableProduk);
+    }
 
-        String id = dialog.tableModel.getValueAt(row, 0).toString();
-        int stokLama = (int) dialog.tableModel.getValueAt(row, 2);
-
-        String input = JOptionPane.showInputDialog(dialog, "Masukkan Jumlah Perubahan Stok (gunakan minus untuk mengurangi):");
-        if (input == null || input.trim().isEmpty()) return;
-
-        try {
-            int perubahan = Integer.parseInt(input);
-            int stokBaru = stokLama + perubahan;
-
-            if (stokBaru < 0) {
-                JOptionPane.showMessageDialog(dialog, "Stok tidak boleh minus!");
-                return;
-            }
-
-            if (kategori.equals("Makanan")) {
-                makananRepo.sesuaikanStok(id, stokBaru);
-            } else if (kategori.equals("Minuman")) {
-                minumanRepo.sesuaikanStok(id, stokBaru);
-            } else if (kategori.equals("Sabun")) {
-                sabunRepo.sesuaikanStok(id, stokBaru);
-            } else if (kategori.equals("Frozen Food")) {
-                frozenRepo.sesuaikanStok(id, stokBaru);
-            }
-            tampilkanDataKeTabel(dialog.tableModel, kategori);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(dialog, "Input harus angka!");
+    public void refreshTabelKategori() {
+        view.modelKategori.setRowCount(0);
+        List<ModelKategori> list = daoKategori.getAll();
+        for (ModelKategori k : list) {
+            view.modelKategori.addRow(new Object[]{
+                k.getId(), 
+                k.getNama(), 
+                k.getKodePrefix(), 
+                k.getDeskripsi()
+            });
         }
     }
-    
-    private void aksiHapus(AllDataDialog dialog, String kategori) {
-        int row = dialog.tableProduk.getSelectedRow();
-        if (row == -1) return;
 
-        String id = dialog.tableModel.getValueAt(row, 0).toString();
-        int konfirmasi = JOptionPane.showConfirmDialog(dialog, "Hapus data ini?", "Hapus", JOptionPane.YES_NO_OPTION);
-        
-        if (konfirmasi == JOptionPane.YES_OPTION) {
-            if (kategori.equals("Makanan")) {
-                makananRepo.hapusMakanan(id);
-            } else if (kategori.equals("Minuman")) {
-                minumanRepo.hapusMinuman(id);
-            } else if (kategori.equals("Sabun")) {
-                sabunRepo.hapusSabun(id);
-            } else if (kategori.equals("Frozen Food")) {
-                frozenRepo.hapusFrozenFood(id);
-            }
-            tampilkanDataKeTabel(dialog.tableModel, kategori);
+    private void aturHakAkses() {
+        if (userAktif.isKasir()) {
+            view.btnTambahProduk.setEnabled(false);
+            view.btnEditProduk.setEnabled(false);
+            view.btnUpdateStok.setEnabled(false);
+            view.btnHapusProduk.setEnabled(false);
+            view.btnTambahKategori.setEnabled(false);
         }
     }
 }

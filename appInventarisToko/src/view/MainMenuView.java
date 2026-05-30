@@ -4,12 +4,12 @@
  */
 package view;
 
+import view.transaksi.TransactionPanel;
+import view.data.AllDataPanel;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import controller.*;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
-import view.TransactionPanel;
+import model.User.ModelUser;
+
 /**
  *
  * @author umair
@@ -23,13 +23,15 @@ public class MainMenuView extends JFrame {
     // Panel Konten Dinamis (Kanan)
     public JPanel panelKonten = new JPanel();
     public CardLayout cardLayout = new CardLayout();
-    public TransactionPanel transaction = new TransactionPanel(); // Silakan aktifkan jika class sudah ada
+    
+    // Inisialisasi Panel Konten Halaman
+    public TransactionPanel transaction = new TransactionPanel(); 
     public AllDataPanel panelLihatDataReal = new AllDataPanel();
     
     public MainMenuView() {
         // Pengaturan Utama Jendela (Medium Size)
         setTitle("Sistem Manajemen Inventaris Toko");
-        setSize(800, 550); // Sedikit dinaikkan agar proporsi dengan lebar sidebar baru lebih pas
+        setSize(950, 600); // Penyesuaian dimensi sedikit agar penataan tabel kasir lebih longgar
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null); 
         setLayout(new BorderLayout());
@@ -49,19 +51,16 @@ public class MainMenuView extends JFrame {
         gbc.weightx = 1.0;
         gbc.insets = new Insets(0, 12, 12, 12); // Jarak antar komponen (top, left, bottom, right)
 
-        // Judul Aplikasi Kecil di Atas Tombol
         JLabel lblMenu = new JLabel("NAVIGASI", SwingConstants.CENTER);
         lblMenu.setFont(new Font("Arial", Font.BOLD, 12));
         lblMenu.setForeground(new Color(149, 165, 166)); // Warna abu-abu soft agar lebih modern
         
         gbc.gridy = 0;
-        gbc.insets = new Insets(20, 12, 25, 12); // Jarak khusus untuk judul menu (jarak bawah lebih besar)
+        gbc.insets = new Insets(20, 12, 25, 12); 
         panelSidebar.add(lblMenu, gbc);
 
-        // Reset inset standar untuk tombol
         gbc.insets = new Insets(0, 12, 10, 12);
 
-        // Desain & Tambah Tombol
         desainTombolSidebar(btnTransaksi);
         gbc.gridy = 1;
         panelSidebar.add(btnTransaksi, gbc);
@@ -70,17 +69,15 @@ public class MainMenuView extends JFrame {
         gbc.gridy = 2;
         panelSidebar.add(btnLihatData, gbc);
 
-        // Membuat space kosong fleksibel sebelum tombol exit (mendorong exit ke paling bawah)
         gbc.gridy = 3;
         gbc.weighty = 1.0; 
         panelSidebar.add(Box.createGlue(), gbc);
 
-        // Desain & Tambah Tombol Exit
         desainTombolSidebar(btnExit);
         btnExit.setBackground(new Color(192, 41, 43)); 
         gbc.gridy = 4;
-        gbc.weighty = 0.0; // Reset weighty
-        gbc.insets = new Insets(0, 12, 20, 12); // Jarak bawah untuk tombol terakhir
+        gbc.weighty = 0.0; 
+        gbc.insets = new Insets(0, 12, 20, 12); 
         panelSidebar.add(btnExit, gbc);
 
 
@@ -97,25 +94,19 @@ public class MainMenuView extends JFrame {
         lblJudulUtama.setForeground(new Color(44, 62, 80));
         panelWelcome.add(lblJudulUtama);
 
-        // 2. Placeholder Halaman Transaksi
-        JPanel panelTransaksi = new JPanel(new BorderLayout());
-        panelTransaksi.add(new JLabel("=== HALAMAN TRANSAKSI STOK ===", SwingConstants.CENTER), BorderLayout.NORTH);
-
-        // 3. Placeholder Halaman Lihat Data
-        JPanel panelData = new JPanel(new BorderLayout());
-        panelData.add(new JLabel("=== HALAMAN SEMUA DATA INVENTARIS ===", SwingConstants.CENTER), BorderLayout.NORTH);
-        
-
         // Memasukkan semua halaman ke dalam CardLayout
         panelKonten.add(panelWelcome, "Welcome");
         panelKonten.add(transaction, "Transaksi"); 
-        
-        // KUNCI: Daftarkan panelLihatDataReal dengan key "LihatData"
         panelKonten.add(panelLihatDataReal, "LihatData");
 
         // Satukan ke JFrame Utama
         add(panelSidebar, BorderLayout.WEST);
         add(panelKonten, BorderLayout.CENTER);
+        
+        // Inisialisasi aksi pertukaran panel internal (CardLayout Switcher)
+        btnTransaksi.addActionListener(e -> panggilPanelHalaman("Transaksi"));
+        btnLihatData.addActionListener(e -> panggilPanelHalaman("LihatData"));
+        btnExit.addActionListener(e -> System.exit(0));
     }
 
     // Helper untuk merapikan tampilan tombol sidebar
@@ -131,14 +122,31 @@ public class MainMenuView extends JFrame {
         button.setPreferredSize(new Dimension(button.getPreferredSize().width, 35));
     }
 
-    
-    public static void main(String[] args) {
-        // TODO code application logic here
-        javax.swing.SwingUtilities.invokeLater(() -> {
-        MainMenuView menu  = new MainMenuView();
-//        LoginDAO model = new LoginDAO;
-//        LoginController controller = new LoginController(login, model);
-        menu.setVisible(true);
-    });
+
+    public void panggilPanelHalaman(String keyNamaHalaman) {
+        cardLayout.show(panelKonten, keyNamaHalaman);
+    }
+
+    /**
+     * Mengatur hak akses visibilitas tombol menu berdasarkan role user yang aktif.
+     * Admin  -> Bisa ke semua menu.
+     * Kasir  -> Hanya menu Transaksi.
+     * Gudang -> Hanya menu Lihat Data (Kelola Produk & Kategori).
+     * @param user
+     */
+    public void setAksesMasingMasingRole(ModelUser user) {
+        if (user.isAdmin()) {
+            btnTransaksi.setVisible(true);
+            btnLihatData.setVisible(true);
+            panggilPanelHalaman("Welcome");
+        } else if (user.isKasir()) {
+            btnTransaksi.setVisible(true);
+            btnLihatData.setVisible(false);
+            panggilPanelHalaman("Transaksi"); // Langsung arahkan ke transaksi
+        } else if (user.isGudang()) {
+            btnTransaksi.setVisible(false);
+            btnLihatData.setVisible(true);
+            panggilPanelHalaman("LihatData"); // Langsung arahkan ke manajemen data produk
+        }
     }
 }
