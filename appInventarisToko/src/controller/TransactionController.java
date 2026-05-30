@@ -4,165 +4,216 @@
  */
 package controller;
 
-import javax.swing.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.table.DefaultTableModel;
-import java.util.List;                   
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import view.DetailTransaksiDialog;
-import view.TransactionPanel;
-import model.dao.BarangDAO;
-import model.dao.TransaksiDAO;
-import model.objects.Barang;
-/**
- *
- * @author umair
- */
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker; // >>> TAMBAHAN KODE: Manajemen thread asinkron agar aman dari race condition
+import model.Produk.DAOProduk;
+import model.Produk.ModelProduk;
+import model.Transaksi.DAOTransaksi;
+import model.Transaksi.ModelTransaksi;
+import model.Transaksi.ModelDetailTransaksi;
+import model.User.ModelUser;
+import view.MainMenuView;
+import view.transaksi.DetailTransaksiDialog; 
+import view.transaksi.TransactionPanel;
+
 public class TransactionController {
     private TransactionPanel view;
-    private BarangDAO barangDao;       
-    private TransaksiDAO transaksiRepo;
+    private ModelUser userAktif;
+    private MainMenuView mainFrame;
     
-    public TransactionController(TransactionPanel view, BarangDAO barangDao, TransaksiDAO transaksiDao) { 
+    private DAOProduk daoProduk;
+    private DAOTransaksi daoTransaksi;
+    private List<ModelDetailTransaksi> listKeranjang;
+    private double totalBelanja = 0;
+
+    public TransactionController(TransactionPanel view, ModelUser userAktif, MainMenuView mainFrame) {
         this.view = view;
-        this.barangRepo = barangDao;
-        this.transaksiRepo = transaksiDao;   // <-- DIUBAH: Diisi langsung dari parameter
-
-        // Listener Tab 1: Kasir
-        this.view.btnTambahKeranjang.addActionListener(e -> tambahKeKeranjang());
-        this.view.btnHapusItem.addActionListener(e -> hapusItemDariKeranjang());
-        this.view.btnCheckout.addActionListener(e -> prosesCheckout());
-
-        // Listener Tab 2: Riwayat
-        this.view.btnLihatDetail.addActionListener(e -> lihatDetailTransaksi());
-        this.view.btnRefresh.addActionListener(e -> muatRiwayatKeTabel()); // <-- DIUBAH: Panggil data DB
+        this.userAktif = userAktif;
+        this.mainFrame = mainFrame;
         
-        // Ambil data riwayat pertama kali saat aplikasi dibuka
-        muatRiwayatKeTabel(); // <-- DIUBAH: Tambahkan pemanggilan awal
+        this.daoProduk = new DAOProduk();
+        this.daoTransaksi = new DAOTransaksi();
+        this.listKeranjang = new ArrayList<>();
+
+        initListeners();
+        refreshRiwayatTabel();
     }
 
-    private void tambahKeKeranjang() {
-        String nama = view.txtNamaBarang.getText().trim();
+    private void initListeners() {
+        // Memicu proses pencarian terisolasi thread saat tombol Cari diklik
+        view.btnCariBarang.addActionListener(e -> prosesPencarianSistemSearch());
+
+        // Memicu proses pencarian terisolasi thread saat tombol ENTER ditekan
+        view.txtKodeBarang.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    prosesPencarianSistemSearch();
+                }
+            }
+        });
+
+        view.btnTambahKeranjang.addActionListener(e -> tambahItemKeKeranjang());
+
+        view.btnHapusItem.addActionListener(e -> {
+            int row = view.tabelKeranjang.getSelectedRow();
+            if (row >= 0) {
+                totalBelanja -= listKeranjang.get(row).getSubtotal();
+                listKeranjang.remove(row);
+                view.modelKeranjang.removeRow(row);
+                view.lblTotalHarga.setText("Total: Rp " + String.format("%,.0f", totalBelanja));
+            }
+        });
+
+        view.btnCheckout.addActionListener(e -> {
+            if (listKeranjang.isEmpty()) return;
+            String input = JOptionPane.showInputDialog(mainFrame, "Total: Rp " + String.format("%,.0f", totalBelanja) + "\nUang Tunai (Rp):");
+            if (input == null) return;
+
+            try {
+                double bayar = Double.parseDouble(input);
+                if (bayar < totalBelanja) {
+                    JOptionPane.showMessageDialog(mainFrame, "Uang tunai kurang!");
+                    return;
+                }
+
+                ModelTransaksi trx = new ModelTransaksi();
+                trx.setKodeTransaksi(daoTransaksi.generateKodeTransaksi());
+                trx.setIdUser(userAktif.getId());
+                trx.setTotalHarga(totalBelanja);
+                trx.setTotalBayar(bayar);
+                trx.setKembalian(bayar - totalBelanja);
+                trx.setStatus("selesai");
+                
+                // >>> PERBAIKAN: Menggunakan method addDetail tunggal secara konsisten loop [cite: 234, 235]
+                for (ModelDetailTransaksi d : listKeranjang) {
+                    trx.addDetail(d);
+                }
+
+                // Operasi insert database dibungkus menggunakan SwingWorker asinkron 
+                SwingWorker<Boolean, Void> checkoutWorker = new SwingWorker<>() {
+                    @Override
+                    protected Boolean doInBackground() throws Exception {
+                        return daoTransaksi.insert(trx);
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            boolean sukses = get();
+                            if (sukses) {
+                                JOptionPane.showMessageDialog(mainFrame, "Checkout Transaksi Berhasil Diproses!");
+                                listKeranjang.clear();
+                                view.modelKeranjang.setRowCount(0);
+                                totalBelanja = 0;
+                                view.lblTotalHarga.setText("Total: Rp 0");
+                                refreshRiwayatTabel();
+                            } else {
+                                JOptionPane.showMessageDialog(mainFrame, "Gagal memproses transaksi database!");
+                            }
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(mainFrame, "Thread Error: " + ex.getMessage());
+                        }
+                    }
+                };
+                checkoutWorker.execute();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(mainFrame, "Format pembayaran salah!");
+            }
+        });
+
+        view.btnRefresh.addActionListener(e -> refreshRiwayatTabel());
+
+        view.btnLihatDetail.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int row = view.tabelRiwayat.getSelectedRow();
+                if (row >= 0) {
+                    int idTransaksi = Integer.parseInt(view.tabelRiwayat.getValueAt(row, 0).toString());
+                    JOptionPane.showMessageDialog(mainFrame, "PERINGATAN: Membuka JDialog baru untuk Nota ID: #" + idTransaksi, "Guardrail System", JOptionPane.WARNING_MESSAGE);
+                    DetailTransaksiDialog dialogDetail = new DetailTransaksiDialog(mainFrame, idTransaksi, daoTransaksi);
+                    dialogDetail.setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, "Silakan pilih baris riwayat terlebih dahulu!");
+                }
+            }
+        });
+    }
+
+    // >>> PERBAIKAN SINKRONISASI THREAD: Menjamin instansiasi query dikerjakan mandiri tanpa memotong siklus List search
+    private void prosesPencarianSistemSearch() {
+        final String kode = view.txtKodeBarang.getText().trim();
+        if (kode.isEmpty()) return;
+
+        view.txtNamaBarang.setText("Mencari data...");
+
+        SwingWorker<ModelProduk, Void> searchWorker = new SwingWorker<>() {
+            @Override
+            protected ModelProduk doInBackground() throws Exception {
+                // Berjalan aman pada Worker Background Thread tersendiri [cite: 223]
+                return daoProduk.getByKode(kode);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ModelProduk produk = get();
+                    if (produk != null) {
+                        view.txtNamaBarang.setText(produk.getNama());
+                        view.txtHarga.setText(String.valueOf(produk.getHargaJual()));
+                        view.txtJumlah.requestFocus();
+                    } else {
+                        JOptionPane.showMessageDialog(mainFrame, "Kode produk tidak terdaftar!");
+                        view.txtNamaBarang.setText("");
+                        view.txtHarga.setText("");
+                    }
+                } catch (Exception e) {
+                    view.txtNamaBarang.setText("Error Pencarian");
+                }
+            }
+        };
+        searchWorker.execute();
+    }
+
+    private void tambahItemKeKeranjang() {
+        String kode = view.txtKodeBarang.getText().trim();
         String qtyStr = view.txtJumlah.getText().trim();
+        if (kode.isEmpty() || qtyStr.isEmpty()) return;
 
         try {
-            int qtyInput = Integer.parseInt(qtyStr);
-            Barang modelBarang = barangRepo.cariBerdasarkanNama(nama); 
-
-            if (modelBarang == null) {
-                JOptionPane.showMessageDialog(view, "Barang tidak ditemukan!");
+            int qty = Integer.parseInt(qtyStr);
+            ModelProduk produk = daoProduk.getByKode(kode);
+            if (produk == null || produk.getStok() < qty) {
+                JOptionPane.showMessageDialog(mainFrame, "Stok tidak mencukupi!");
                 return;
             }
 
-            if (modelBarang.getStok() < qtyInput) {
-                JOptionPane.showMessageDialog(view, "Stok tidak cukup! Sisa: " + modelBarang.getStok());
-                return;
-            }
-
-            view.txtHarga.setText(String.valueOf(modelBarang.getHarga()));
-            int subtotal = modelBarang.getHarga() * qtyInput;
+            double subtotal = produk.getHargaJual() * qty;
+            ModelDetailTransaksi detail = new ModelDetailTransaksi(produk.getId(), produk.getNama(), produk.getHargaJual(), qty);
+            listKeranjang.add(detail);
             
-            view.modelKeranjang.addRow(new Object[]{modelBarang.getId(), nama, modelBarang.getHarga(), qtyInput, subtotal});
-            hitungTotalHarga();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "Jumlah harus berupa angka!");
-        }
-    }
-    
-    // <-- DIUBAH TOTAL: Logika Checkout sekarang menyimpan ke Database secara riil
-    private void prosesCheckout() {
-        if (view.modelKeranjang.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(view, "Keranjang belanja masih kosong!");
-            return;
-        }
-
-        String txId = "TX-" + (System.currentTimeMillis() % 100000);
-        String tanggal = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-        
-        // Ambil string nominal total (Misal dari "Total: Rp 15000" diambil "15000")
-        String totalStr = view.lblTotalHarga.getText().replaceAll("[^0-9]", "");
-        int totalHarga = Integer.parseInt(totalStr);
-
-        // 1. Instansiasi objek Transaksi utama
-        Transaksi transaksi = new Transaksi(txId, tanggal, totalHarga);
-
-        // 2. Loop baris keranjang untuk memotong stok DB sekaligus mengisi DetailTransaksi
-        for (int i = 0; i < view.modelKeranjang.getRowCount(); i++) {
-            String idBarang = view.modelKeranjang.getValueAt(i, 0).toString();
-            String namaBarang = view.modelKeranjang.getValueAt(i, 1).toString();
-            int harga = (int) view.modelKeranjang.getValueAt(i, 2);
-            int qty = (int) view.modelKeranjang.getValueAt(i, 3);
-            int subtotal = (int) view.modelKeranjang.getValueAt(i, 4);
-
-            // Tambahkan item belanja ke list object transaksi
-            DetailTransaksi detailItem = new DetailTransaksi(namaBarang, harga, qty, subtotal);
-            transaksi.getListDetail().add(detailItem);
-
-            // Potong stok produk di masing-masing tabel kategorinya
-            Barang b = barangRepo.cariBerdasarkanNama(namaBarang);
-            if (b != null) {
-                int stokTerbaru = b.getStok() - qty;
-                barangRepo.updateStok(idBarang, stokTerbaru, b.getNamaTabel());
-            }
-        }
-
-        // 3. Simpan data transaksi & detail ke DB via TransaksiDAO
-        boolean suksesSimpan = transaksiRepo.simpanTransaksi(transaksi);
-
-        if (suksesSimpan) {
-            JOptionPane.showMessageDialog(view, "Transaksi Berhasil Disimpan ke Database!");
-            view.modelKeranjang.setRowCount(0);
-            view.lblTotalHarga.setText("Total: Rp 0");
-            muatRiwayatKeTabel(); // Segarkan tampilan tabel riwayat secara real-time
-        } else {
-            JOptionPane.showMessageDialog(view, "Gagal memproses transaksi ke database.");
-        }
-    }
-    
-    private void hitungTotalHarga() {
-        int total = 0;
-        for (int i = 0; i < view.modelKeranjang.getRowCount(); i++) {
-            total += (int) view.modelKeranjang.getValueAt(i, 4);
-        }
-        view.lblTotalHarga.setText("Total: Rp " + total);
-    }
-
-    private void hapusItemDariKeranjang() {
-        int row = view.tabelKeranjang.getSelectedRow();
-        if (row != -1) {
-            view.modelKeranjang.removeRow(row);
-            hitungTotalHarga();
+            view.modelKeranjang.addRow(new Object[]{kode, produk.getNama(), "Rp " + produk.getHargaJual(), qty, "Rp " + subtotal});
+            totalBelanja += subtotal;
+            view.lblTotalHarga.setText("Total: Rp " + String.format("%,.0f", totalBelanja));
+            
+            view.txtKodeBarang.setText(""); view.txtNamaBarang.setText(""); view.txtHarga.setText(""); view.txtJumlah.setText("");
+            view.txtKodeBarang.requestFocus();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(mainFrame, "Input tidak valid!");
         }
     }
 
-    private void lihatDetailTransaksi() {
-        int row = view.tabelRiwayat.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(view, "Pilih baris nota di tabel riwayat terlebih dahulu!");
-            return;
-        }
-        String idTx = view.modelRiwayat.getValueAt(row, 0).toString();
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(view);
-        
-        // Oper transaksiRepo ke dialog agar dialog bisa membaca data detail asli dari DB
-        DetailTransaksiDialog dialog = new DetailTransaksiDialog(parentFrame, idTx, transaksiRepo); // <-- DIUBAH: Kirim repo
-        dialog.setVisible(true);
-    }
-
-
-    // <-- DIUBAH: Fungsi Baru untuk meload data transaksi asli dari database MySQL
-    private void muatRiwayatKeTabel() {
-        view.modelRiwayat.setRowCount(0); // Kosongkan tabel riwayat lama di UI
-        List<Transaksi> daftarTx = transaksiRepo.ambilSemuaTransaksi();
-        
-        for (Transaksi t : daftarTx) {
-            view.modelRiwayat.addRow(new Object[]{
-                t.getIdTransaksi(), 
-                t.getTanggalTransaksi(), 
-                "Rp " + t.getTotalHarga()
-            });
+    private void refreshRiwayatTabel() {
+        view.modelRiwayat.setRowCount(0);
+        for (ModelTransaksi t : daoTransaksi.getAll()) {
+            view.modelRiwayat.addRow(new Object[]{t.getId(), t.getKodeTransaksi(), t.getNamaUser(), "Rp " + String.format("%,.0f", t.getTotalHarga()), "Rp " + String.format("%,.0f", t.getTotalBayar()), "Rp " + String.format("%,.0f", t.getKembalian()), t.getCreatedAt()});
         }
     }
 }

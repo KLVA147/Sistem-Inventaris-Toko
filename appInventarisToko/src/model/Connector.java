@@ -2,23 +2,20 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package model.connector;
+package model;
 
 import java.sql.*;
-/**
- *
- * 
- */
-public class DBConnector {
-    String jdbc_driver = "com.mysql.cj.jdbc.Driver";
-    String nama_db = "inventaris_db";
-    String url_db = "jdbc:mysql://localhost:3306/" + nama_db;
-    String username_db = "root";
-    String password_db = "";
 
-    Connection conn;
+public class Connector {
+    static String jdbc_driver = "com.mysql.cj.jdbc.Driver";
+    static String nama_db = "inventaris_toko";
+    static String url_db = "jdbc:mysql://localhost:3306/" + nama_db;
+    static String username_db = "root";
+    static String password_db = "";
 
-    public Connection Connect() {
+    static Connection conn;
+
+    public static Connection Connect() {
         try {
             Class.forName(jdbc_driver);
             conn = DriverManager.getConnection(url_db, username_db, password_db);
