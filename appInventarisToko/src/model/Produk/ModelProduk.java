@@ -56,10 +56,8 @@ public class ModelProduk {
     public boolean isAktif()                    { return aktif; }
     public void    setAktif(boolean a)          { this.aktif = a; }
 
-    /** Business logic: stok rendah jika di bawah stok minimum */
     public boolean isStokRendah() { return stok <= stokMinimum; }
 
-    /** Hitung margin keuntungan */
     public double getMargin() {
         if (hargaBeli == 0) return 0;
         return ((hargaJual - hargaBeli) / hargaBeli) * 100;

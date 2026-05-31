@@ -68,7 +68,6 @@ public class ControllerProduk {
         try {
             if (jumlah <= 0) throw new Exception("Jumlah stok masuk harus lebih dari 0!");
             dao.updateStok(idProduk, jumlah, "masuk");
-            // Log stok masuk
             logStokMasuk(idProduk, idUser, jumlah, keterangan);
             JOptionPane.showMessageDialog(null, "Stok berhasil ditambah.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
             return true;

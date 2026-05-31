@@ -26,5 +26,5 @@ public class ModelKategori {
     public void    setDeskripsi(String d)       { this.deskripsi = d; }
 
     @Override
-    public String toString() { return nama; }  // used in JComboBox
+    public String toString() { return nama; }
 }
