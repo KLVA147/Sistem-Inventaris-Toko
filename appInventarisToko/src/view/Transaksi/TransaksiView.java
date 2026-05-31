@@ -17,13 +17,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Point-of-Sale cashier screen.
- * Multithreading: "Selesaikan Transaksi" triggers SwingWorker via ControllerTransaksi.simpanTransaksi().
- *
- * OOP Pillar: Encapsulation — cart state (keranjang) kept private here.
- *             Inheritance  — extends JFrame.
- */
 public class TransaksiView extends JFrame {
 
     private final ControllerTransaksi ctrl;
@@ -49,7 +42,6 @@ public class TransaksiView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // ---- LEFT: Cart Table ----
         String[] kolom = {"#", "Nama Produk", "Harga", "Jumlah", "Subtotal"};
         keranjangModel = new DefaultTableModel(kolom, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -67,7 +59,6 @@ public class TransaksiView extends JFrame {
         belowCart.add(btnHapusItem);
         leftPanel.add(belowCart, BorderLayout.SOUTH);
 
-        // ---- RIGHT: Input Panel ----
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -103,11 +94,9 @@ public class TransaksiView extends JFrame {
         JButton btnMenu = new JButton("← Kembali ke Menu");
         rightPanel.add(rightBtn(btnMenu));
 
-        // ---- Main layout ----
         add(leftPanel,  BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
 
-        // ---- Events ----
         ActionListener cariAction = e -> cariProduk();
         btnCariProduk.addActionListener(cariAction);
         inputKode.addActionListener(cariAction);
@@ -144,7 +133,6 @@ public class TransaksiView extends JFrame {
                 return;
             }
 
-            // Check if already in cart → add quantity
             for (ModelDetailTransaksi d : keranjang) {
                 if (d.getIdProduk().equals(p.getId())) {
                     d.setJumlah(d.getJumlah() + jumlah);

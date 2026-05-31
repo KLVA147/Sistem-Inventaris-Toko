@@ -14,10 +14,6 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/**
- * Main menu — shows only the buttons the logged-in user's role is allowed to use.
- * OOP Pillar: Encapsulation (user object passed in, role checked inside).
- */
 public class MenuView extends JFrame {
 
     private final ModelUser user;
@@ -47,7 +43,6 @@ public class MenuView extends JFrame {
         panel.add(roleLabel);
         panel.add(Box.createVerticalStrut(24));
 
-        // -- Kasir & Admin: Transaksi
         if (user.isKasir() || user.isAdmin()) {
             panel.add(buatTombol("🧾  Transaksi Penjualan", e -> {
                 dispose(); new TransaksiView(user);
@@ -59,7 +54,6 @@ public class MenuView extends JFrame {
             panel.add(Box.createVerticalStrut(8));
         }
 
-        // -- Gudang & Admin: Produk
         if (user.isGudang() || user.isAdmin()) {
             panel.add(buatTombol("📦  Kelola Produk", e -> {
                 dispose(); new ProdukView(user);
@@ -67,7 +61,6 @@ public class MenuView extends JFrame {
             panel.add(Box.createVerticalStrut(8));
         }
 
-        // -- Admin only: Kategori
         if (user.isAdmin()) {
             panel.add(buatTombol("🗂  Kelola Kategori", e -> {
                 dispose(); new KategoriView(user);

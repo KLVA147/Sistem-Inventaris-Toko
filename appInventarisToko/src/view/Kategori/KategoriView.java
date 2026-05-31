@@ -40,7 +40,6 @@ public class KategoriView extends JFrame {
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Layout
         JPanel cariPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         cariPanel.add(new JLabel("Cari:"));
         cariPanel.add(inputCari);
@@ -74,7 +73,6 @@ public class KategoriView extends JFrame {
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(south, BorderLayout.SOUTH);
 
-        // Events
         table.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();

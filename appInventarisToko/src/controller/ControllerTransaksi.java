@@ -11,15 +11,6 @@ import view.Transaksi.TransaksiView;
 import javax.swing.*;
 import java.util.List;
 
-/**
- * OOP Pillar: Encapsulation — manages full sales transaction lifecycle.
- *
- * MULTITHREADING:
- *   - DB save runs in SwingWorker's background thread (doInBackground)
- *     to keep the Swing EDT responsive during the database round-trip.
- *   - UI updates happen in done() which is back on the EDT.
- *   - A loading dialog is shown on the EDT while the worker runs.
- */
 public class ControllerTransaksi {
 
     private final DAOTransaksi  daoTransaksi = new DAOTransaksi();
@@ -46,9 +37,6 @@ public class ControllerTransaksi {
             return;
         }
 
-        // ---- MULTITHREADING: SwingWorker ----
-        // doInBackground() runs on a background thread → non-blocking DB save
-        // done()           runs back on the EDT → safe UI update
         JDialog loadingDialog = buatLoadingDialog();
 
         SwingWorker<ModelTransaksi, Void> worker = new SwingWorker<>() {
@@ -78,7 +66,6 @@ public class ControllerTransaksi {
 
         loadingDialog.setVisible(true);
         worker.execute();
-        // Loading dialog will block visually but EDT remains responsive via SwingWorker
     }
 
     private JDialog buatLoadingDialog() {

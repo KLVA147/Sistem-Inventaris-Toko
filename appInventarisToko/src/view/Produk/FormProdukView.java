@@ -13,10 +13,6 @@ import java.awt.*;
 import java.util.List;
 import javax.swing.*;
 
-/**
- * Reused for both Add and Edit (null produk = add mode).
- * OOP Pillar: Encapsulation — form logic isolated from table view.
- */
 public class FormProdukView extends JFrame {
 
     private final ControllerProduk   ctrlProduk   = new ControllerProduk();
@@ -39,11 +35,9 @@ public class FormProdukView extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Populate kategori combo
         List<ModelKategori> kategoriList = ctrlKategori.getAll();
         for (ModelKategori k : kategoriList) comboKat.addItem(k);
 
-        // Pre-fill if edit
         if (isEdit) {
             inputKode.setText(editProduk.getKodeProduk());
             inputKode.setEditable(false);
@@ -61,7 +55,6 @@ public class FormProdukView extends JFrame {
             inputDesk.setText(editProduk.getDeskripsi() != null ? editProduk.getDeskripsi() : "");
         }
 
-        // Build form
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
         GridBagConstraints gbc = new GridBagConstraints();

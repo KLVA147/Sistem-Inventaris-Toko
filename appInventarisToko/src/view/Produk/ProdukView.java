@@ -35,13 +35,11 @@ public class ProdukView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Table
         tableModel = new ModelTableProduk(ctrlProduk.getAll());
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        // Color rows with low stock RED
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int row, int col) {
@@ -52,7 +50,6 @@ public class ProdukView extends JFrame {
             }
         });
 
-        // Search panel
         JPanel cariPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         cariPanel.add(new JLabel("Cari:"));
         cariPanel.add(inputCari);
@@ -66,7 +63,6 @@ public class ProdukView extends JFrame {
         JButton btnRendah = new JButton("⚠ Stok Rendah");
         cariPanel.add(btnCari); cariPanel.add(btnReset); cariPanel.add(btnRendah);
 
-        // Action buttons
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton btnTambah     = new JButton("+ Tambah Produk");
         JButton btnEdit       = new JButton("✏ Edit");
@@ -152,7 +148,6 @@ public class ProdukView extends JFrame {
         setVisible(true);
     }
 
-    /** Called by FormProdukView after save to refresh the table */
     public void refresh() {
         tableModel.setData(ctrlProduk.getAll());
         setVisible(true);

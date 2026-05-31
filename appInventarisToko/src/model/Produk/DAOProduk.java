@@ -9,9 +9,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * OOP Pillar: Polymorphism — implements InterfaceDAOProduk.
- */
 public class DAOProduk implements InterfaceDAOProduk {
 
     private static final String SELECT_BASE =

@@ -11,27 +11,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * OOP Pillar: Encapsulation — full transaction lifecycle in one class.
- * Handles atomic save: transaksi + detail + update stok in one Connection.
- */
 public class DAOTransaksi {
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmss");
 
-    /** Generate unique kode transaksi e.g. TRX-20260524143022-001 */
     public String generateKodeTransaksi() {
         return "TRX-" + SDF.format(new Date());
     }
 
-    /**
-     * Simpan transaksi beserta semua detail dan update stok produk.
-     * Multithreading: DB operations are intentionally kept atomic here via
-     * single Connection; the caller (ControllerTransaksi) runs this in a
-     * SwingWorker background thread.
-     *
-     * @return saved transaksi with id set, or null on failure
-     */
     public ModelTransaksi simpanTransaksi(ModelTransaksi trx) {
         Connection conn = Connector.Connect();
         try {

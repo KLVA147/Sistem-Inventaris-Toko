@@ -65,7 +65,6 @@ public class RiwayatTransaksiView extends JFrame {
     }
 
     private void loadData() {
-        // Multithreading: load riwayat in background to keep UI responsive
         SwingWorker<List<ModelTransaksi>, Void> worker = new SwingWorker<>() {
             @Override
             protected List<ModelTransaksi> doInBackground() {

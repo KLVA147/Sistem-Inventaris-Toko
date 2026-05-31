@@ -7,10 +7,6 @@ package controller;
 import model.Connector;
 import java.sql.*;
 
-/**
- *
- * @author IKHWANUL HASANI
- */
 public class placeholder {
     public placeholder(Connection aa)
     {

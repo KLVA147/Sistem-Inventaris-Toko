@@ -24,7 +24,6 @@ public class ModelTransaksi {
 
     public ModelTransaksi() { this.status = "selesai"; }
 
-    // ---- Getters / Setters ----
     public Integer getId()                   { return id; }
     public void    setId(Integer id)         { this.id = id; }
 

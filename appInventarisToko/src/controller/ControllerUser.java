@@ -10,9 +10,6 @@ import view.Menu.MenuView;
 import javax.swing.*;
 import java.util.List;
 
-/**
- * OOP Pillar: Encapsulation — mediates between View and Model.
- */
 public class ControllerUser {
 
     private final InterfaceDAOUser daoUser = new DAOUser();

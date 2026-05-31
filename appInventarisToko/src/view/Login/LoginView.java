@@ -10,9 +10,6 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-/**
- * OOP Pillar: Inheritance — extends JFrame.
- */
 public class LoginView extends JFrame {
 
     private final JTextField     inputUsername = new JTextField();

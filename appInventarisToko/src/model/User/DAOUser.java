@@ -9,10 +9,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * OOP Pillar: Polymorphism — implements InterfaceDAOUser.
- *             Encapsulation — all SQL logic encapsulated here.
- */
 public class DAOUser implements InterfaceDAOUser {
 
     private ModelUser mapRow(ResultSet rs) throws SQLException {
