@@ -56,7 +56,8 @@ public class TransaksiView extends JFrame {
         accentStrip.setBackground(MetroTheme.ACCENT);
         accentStrip.setPreferredSize(new Dimension(0, 4));
         header.add(accentStrip, BorderLayout.NORTH);
-        header.add(MetroTheme.titleLabel("🧾  Transaksi Penjualan"), BorderLayout.WEST);
+        header.add(MetroTheme.titleLabel("Transaksi Penjualan"), BorderLayout.WEST);
+        header.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         JButton btnMenuTop = MetroTheme.ghostButton("← Kembali ke Menu");
         btnMenuTop.addActionListener(e -> { dispose(); new MenuView(user); });
         JPanel hRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
@@ -75,8 +76,10 @@ public class TransaksiView extends JFrame {
         JPanel cartPanel = new JPanel(new BorderLayout(0, 8));
         cartPanel.setBackground(MetroTheme.BG_DARK);
         cartPanel.setBorder(MetroTheme.cardBorder("🛒 Keranjang Belanja"));
-
+        cartPanel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+        
         JButton btnHapusItem = MetroTheme.dangerButton("🗑  Hapus Item");
+        btnHapusItem.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         btnHapusItem.addActionListener(e -> hapusItem());
         JPanel cartBottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         cartBottom.setOpaque(false);

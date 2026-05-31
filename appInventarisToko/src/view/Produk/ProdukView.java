@@ -53,15 +53,20 @@ public class ProdukView extends JFrame {
         header.add(accentStrip, BorderLayout.NORTH);
 
         JLabel titleLbl = MetroTheme.titleLabel("📦  Kelola Produk");
+        titleLbl.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         header.add(titleLbl, BorderLayout.WEST);
 
         JPanel actionBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionBtns.setOpaque(false);
         JButton btnTambah     = MetroTheme.primaryButton("+ Tambah");
         JButton btnEdit       = MetroTheme.ghostButton("✏ Edit");
+        btnEdit.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         JButton btnHapus      = MetroTheme.dangerButton("🗑 Hapus");
+        btnHapus.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         JButton btnTambahStok = MetroTheme.ghostButton("📥 Stok Masuk");
+        btnTambahStok.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         JButton btnMenu       = MetroTheme.ghostButton("← Menu");
+        btnMenu.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
         actionBtns.add(btnMenu);
         actionBtns.add(btnTambah);
         actionBtns.add(btnEdit);
@@ -88,6 +93,7 @@ public class ProdukView extends JFrame {
         JButton btnCari   = MetroTheme.primaryButton("Cari");
         JButton btnReset  = MetroTheme.ghostButton("Reset");
         JButton btnRendah = MetroTheme.ghostButton("⚠ Stok Rendah");
+        btnRendah.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
 
         toolbar.add(MetroTheme.bodyLabel("Cari:"));
         toolbar.add(inputCari);

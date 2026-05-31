@@ -48,7 +48,8 @@ public class KategoriView extends JFrame {
         accentStrip.setBackground(MetroTheme.ACCENT);
         accentStrip.setPreferredSize(new Dimension(0, 4));
         header.add(accentStrip, BorderLayout.NORTH);
-        header.add(MetroTheme.titleLabel("🗂  Kelola Kategori"), BorderLayout.WEST);
+        header.add(MetroTheme.titleLabel("Kelola Kategori"), BorderLayout.WEST);
+        header.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
 
         JButton btnMenu = MetroTheme.ghostButton("← Menu");
         btnMenu.addActionListener(e -> { dispose(); new MenuView(user); });
