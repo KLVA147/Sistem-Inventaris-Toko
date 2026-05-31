@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/Main/AppInventarisToko.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/model/Kategori/ModelKategori.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/model/Kategori/DAOKategori.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/view/Transaksi/RiwayatTransaksiView.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/model/Transaksi/DAOTransaksi.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/view/Kategori/KategoriView.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/controller/placeholder.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/view/Login/LoginView.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/controller/ControllerProduk.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/model/Produk/DAOProduk.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/model/Produk/InterfaceDAOProduk.java</file>
+            <file>file:/C:/Users/umair/OneDrive/Dokumen/NetBeansProjects/Sistem-Inventaris-Toko-wip-1/appInventarisToko/src/model/Produk/ModelTableProduk.java</file>
+        </group>
+    </open-files>
+</project-private>
