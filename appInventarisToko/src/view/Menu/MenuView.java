@@ -10,7 +10,9 @@ import view.Produk.ProdukView;
 import view.Kategori.KategoriView;
 import view.Transaksi.TransaksiView;
 import view.Transaksi.RiwayatTransaksiView;
+import view.theme.MetroTheme;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -20,72 +22,145 @@ public class MenuView extends JFrame {
 
     public MenuView(ModelUser user) {
         this.user = user;
+        MetroTheme.install();
 
         setTitle("Sistem Inventaris Toko - Menu Utama");
-        setSize(440, 420);
+        setSize(480, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(new EmptyBorder(24, 40, 24, 40));
+        // ── Root ─────────────────────────────────────────────────────────────
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(MetroTheme.BG_DARK);
+        setContentPane(root);
 
-        JLabel header = new JLabel("Selamat datang, " + user.getNamaLengkap() + "!");
-        header.setFont(new Font("SansSerif", Font.BOLD, 15));
-        header.setAlignmentX(CENTER_ALIGNMENT);
-        panel.add(header);
+        // ── Header ───────────────────────────────────────────────────────────
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(MetroTheme.BG_SURFACE);
+        header.setBorder(new EmptyBorder(20, 28, 20, 28));
 
-        JLabel roleLabel = new JLabel("Role: " + user.getRole().toUpperCase());
-        roleLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        roleLabel.setForeground(Color.GRAY);
-        roleLabel.setAlignmentX(CENTER_ALIGNMENT);
-        panel.add(roleLabel);
-        panel.add(Box.createVerticalStrut(24));
+        JPanel headerLeft = new JPanel(new GridLayout(2, 1, 0, 2));
+        headerLeft.setBackground(MetroTheme.BG_SURFACE);
+
+        JLabel welcome = MetroTheme.titleLabel("Selamat datang, " + user.getNamaLengkap() + "!");
+        JLabel roleLabel = MetroTheme.mutedLabel("Role: " + user.getRole().toUpperCase()
+            + "   •   Sistem Inventaris Toko");
+        headerLeft.add(welcome);
+        headerLeft.add(roleLabel);
+        header.add(headerLeft, BorderLayout.CENTER);
+
+        JPanel accentBar = new JPanel();
+        accentBar.setBackground(MetroTheme.ACCENT);
+        accentBar.setPreferredSize(new Dimension(0, 3));
+        root.add(accentBar, BorderLayout.NORTH);
+        root.add(header, BorderLayout.NORTH);
+
+        // Rebuild – accent strip must be first
+        root.removeAll();
+        JPanel topWrap = new JPanel(new BorderLayout());
+        topWrap.setBackground(MetroTheme.BG_DARK);
+        JPanel accentStrip = new JPanel();
+        accentStrip.setBackground(MetroTheme.ACCENT);
+        accentStrip.setPreferredSize(new Dimension(0, 4));
+        topWrap.add(accentStrip, BorderLayout.NORTH);
+        topWrap.add(header, BorderLayout.CENTER);
+        root.add(topWrap, BorderLayout.NORTH);
+
+        // ── Menu tiles ────────────────────────────────────────────────────────
+        JPanel tilesArea = new JPanel();
+        tilesArea.setLayout(new BoxLayout(tilesArea, BoxLayout.Y_AXIS));
+        tilesArea.setBackground(MetroTheme.BG_DARK);
+        tilesArea.setBorder(new EmptyBorder(24, 40, 24, 40));
 
         if (user.isKasir() || user.isAdmin()) {
-            panel.add(buatTombol("🧾  Transaksi Penjualan", e -> {
+            tilesArea.add(tile("🧾", "Transaksi Penjualan", "Proses penjualan produk", MetroTheme.ACCENT, e -> {
                 dispose(); new TransaksiView(user);
             }));
-            panel.add(Box.createVerticalStrut(8));
-            panel.add(buatTombol("📋  Riwayat Transaksi", e -> {
+            tilesArea.add(Box.createVerticalStrut(10));
+            tilesArea.add(tile("📋", "Riwayat Transaksi", "Lihat history transaksi", MetroTheme.BG_CARD, e -> {
                 dispose(); new RiwayatTransaksiView(user);
             }));
-            panel.add(Box.createVerticalStrut(8));
+            tilesArea.add(Box.createVerticalStrut(10));
         }
 
         if (user.isGudang() || user.isAdmin()) {
-            panel.add(buatTombol("📦  Kelola Produk", e -> {
+            tilesArea.add(tile("📦", "Kelola Produk", "Manajemen stok & produk", MetroTheme.BG_CARD, e -> {
                 dispose(); new ProdukView(user);
             }));
-            panel.add(Box.createVerticalStrut(8));
+            tilesArea.add(Box.createVerticalStrut(10));
         }
 
         if (user.isAdmin()) {
-            panel.add(buatTombol("🗂  Kelola Kategori", e -> {
+            tilesArea.add(tile("🗂", "Kelola Kategori", "Atur kategori produk", MetroTheme.BG_CARD, e -> {
                 dispose(); new KategoriView(user);
             }));
-            panel.add(Box.createVerticalStrut(8));
+            tilesArea.add(Box.createVerticalStrut(10));
         }
 
-        panel.add(Box.createVerticalStrut(16));
-        panel.add(buatTombol("🚪  Logout", e -> {
+        tilesArea.add(Box.createVerticalStrut(6));
+        tilesArea.add(tile("🚪", "Logout", "Keluar dari sesi ini", MetroTheme.BG_SURFACE, e -> {
             int ok = JOptionPane.showConfirmDialog(null, "Yakin ingin logout?",
                 "Konfirmasi Logout", JOptionPane.YES_NO_OPTION);
             if (ok == 0) { dispose(); new LoginView(); }
         }));
 
-        add(panel);
+        JScrollPane scroll = new JScrollPane(tilesArea);
+        scroll.setBorder(null);
+        scroll.setBackground(MetroTheme.BG_DARK);
+        scroll.getViewport().setBackground(MetroTheme.BG_DARK);
+        root.add(scroll, BorderLayout.CENTER);
+
         setVisible(true);
     }
 
-    private JButton buatTombol(String text, java.awt.event.ActionListener al) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        btn.setPreferredSize(new Dimension(340, 44));
-        btn.setMaximumSize(new Dimension(340, 44));
-        btn.setAlignmentX(CENTER_ALIGNMENT);
-        btn.addActionListener(al);
-        return btn;
+    /** A full-width tile button with icon + title + subtitle */
+    private JPanel tile(String icon, String title, String subtitle, Color bg, ActionListener al) {
+        JPanel tile = new JPanel(new BorderLayout(14, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                g2.dispose();
+            }
+        };
+        tile.setBackground(bg);
+        tile.setBorder(new EmptyBorder(14, 18, 14, 18));
+        tile.setOpaque(false);
+        tile.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        tile.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
+        tile.add(iconLabel, BorderLayout.WEST);
+
+        JPanel textPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+        textPanel.setOpaque(false);
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(MetroTheme.FONT_HEADING);
+        titleLabel.setForeground(MetroTheme.TEXT_PRIMARY);
+        JLabel subLabel = new JLabel(subtitle);
+        subLabel.setFont(MetroTheme.FONT_SMALL);
+        subLabel.setForeground(MetroTheme.TEXT_SECONDARY);
+        textPanel.add(titleLabel);
+        textPanel.add(subLabel);
+        tile.add(textPanel, BorderLayout.CENTER);
+
+        JLabel arrow = new JLabel("›");
+        arrow.setFont(new Font("Segoe UI", Font.PLAIN, 22));
+        arrow.setForeground(MetroTheme.TEXT_MUTED);
+        tile.add(arrow, BorderLayout.EAST);
+
+        tile.addMouseListener(new java.awt.event.MouseAdapter() {
+            final Color normal = bg;
+            final Color hover  = bg.brighter();
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) { tile.setBackground(hover); tile.repaint(); }
+            @Override public void mouseExited(java.awt.event.MouseEvent e)  { tile.setBackground(normal); tile.repaint(); }
+            @Override public void mouseClicked(java.awt.event.MouseEvent e) { al.actionPerformed(null); }
+        });
+
+        return tile;
     }
 }
