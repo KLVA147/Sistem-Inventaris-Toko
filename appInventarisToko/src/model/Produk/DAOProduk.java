@@ -21,7 +21,7 @@ public class DAOProduk implements InterfaceDAOProduk {
     private ModelProduk mapRow(ResultSet rs) throws SQLException {
         ModelProduk p = new ModelProduk();
         p.setId(rs.getInt("id"));
-        p.setKodeProduk(rs.getString("kode_produk")); // Menyelaraskan dengan kolom SQL Dump [cite: 254]
+        p.setKodeProduk(rs.getString("kode_produk"));
         p.setNama(rs.getString("nama"));
         p.setIdKategori(rs.getInt("id_kategori"));
         p.setNamaKategori(rs.getString("nama_kategori"));
@@ -40,9 +40,8 @@ public class DAOProduk implements InterfaceDAOProduk {
         String sql = "SELECT COUNT(*) FROM produk WHERE kode_produk=?";
         try (PreparedStatement ps = Connector.Connect().prepareStatement(sql)) {
             ps.setString(1, kodeProduk);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
         } catch (SQLException e) {
             System.err.println("[DAOProduk.kodeExists] " + e.getMessage());
         }
@@ -106,9 +105,8 @@ public class DAOProduk implements InterfaceDAOProduk {
         String sql = SELECT_BASE + "WHERE p.id=?";
         try (PreparedStatement ps = Connector.Connect().prepareStatement(sql)) {
             ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
-            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapRow(rs);
         } catch (SQLException e) {
             System.err.println("[DAOProduk.getById] " + e.getMessage());
         }
@@ -120,9 +118,8 @@ public class DAOProduk implements InterfaceDAOProduk {
         String sql = SELECT_BASE + "WHERE p.kode_produk=? AND p.aktif=TRUE";
         try (PreparedStatement ps = Connector.Connect().prepareStatement(sql)) {
             ps.setString(1, kodeProduk);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapRow(rs);
-            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapRow(rs);
         } catch (SQLException e) {
             System.err.println("[DAOProduk.getByKode] " + e.getMessage());
         }
@@ -135,10 +132,7 @@ public class DAOProduk implements InterfaceDAOProduk {
         String sql = SELECT_BASE + "WHERE p.aktif=TRUE ORDER BY k.nama, p.nama";
         try (Statement st = Connector.Connect().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            // Isolasi resource Statement & ResultSet menjamin perulangan while berjalan 100% aman
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
+            while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
             System.err.println("[DAOProduk.getAll] " + e.getMessage());
         }
@@ -151,11 +145,8 @@ public class DAOProduk implements InterfaceDAOProduk {
         String sql = SELECT_BASE + "WHERE p.id_kategori=? AND p.aktif=TRUE ORDER BY p.nama";
         try (PreparedStatement ps = Connector.Connect().prepareStatement(sql)) {
             ps.setInt(1, idKategori);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapRow(rs));
-                }
-            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
             System.err.println("[DAOProduk.getByKategori] " + e.getMessage());
         }
@@ -168,16 +159,13 @@ public class DAOProduk implements InterfaceDAOProduk {
         String sql = SELECT_BASE + "WHERE p.aktif=TRUE AND p.stok <= p.stok_minimum ORDER BY p.stok ASC";
         try (Statement st = Connector.Connect().createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
+            while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
             System.err.println("[DAOProduk.getStokRendah] " + e.getMessage());
         }
         return list;
     }
 
-    // >>> PERBAIKAN UTAMA SEARCH: Mengamankan perulangan asinkron data dengan sub-resources local pointer
     @Override
     public List<ModelProduk> search(String keyword) {
         List<ModelProduk> list = new ArrayList<>();
@@ -187,23 +175,24 @@ public class DAOProduk implements InterfaceDAOProduk {
             ps.setString(1, like);
             ps.setString(2, like);
             ps.setString(3, like);
-            try (ResultSet rs = ps.executeQuery()) {
-                // Loop while dijamin berjalan lancar tanpa interupsi inter-thread
-                while (rs.next()) {
-                    list.add(mapRow(rs));
-                }
-            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
-            System.err.println("[DAOProduk.search] Gagal memuat search: " + e.getMessage());
+            System.err.println("[DAOProduk.search] " + e.getMessage());
         }
-        return list; // Kembalian objek List dijamin valid berisi baris data
+        return list;
     }
 
     @Override
     public void updateStok(int idProduk, int jumlah, String jenis) {
-        String sql = "masuk".equals(jenis) ? "UPDATE produk SET stok = stok + ? WHERE id=?" :
-                     "keluar".equals(jenis) ? "UPDATE produk SET stok = stok - ? WHERE id=?" :
-                     "UPDATE produk SET stok = ? WHERE id=?";
+        String sql;
+        if ("masuk".equals(jenis)) {
+            sql = "UPDATE produk SET stok = stok + ? WHERE id=?";
+        } else if ("keluar".equals(jenis)) {
+            sql = "UPDATE produk SET stok = stok - ? WHERE id=?";
+        } else {
+            sql = "UPDATE produk SET stok = ? WHERE id=?";
+        }
         try (PreparedStatement ps = Connector.Connect().prepareStatement(sql)) {
             ps.setInt(1, jumlah);
             ps.setInt(2, idProduk);

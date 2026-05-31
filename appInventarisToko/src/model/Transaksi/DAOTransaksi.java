@@ -11,16 +11,28 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * OOP Pillar: Encapsulation — full transaction lifecycle in one class.
+ * Handles atomic save: transaksi + detail + update stok in one Connection.
+ */
 public class DAOTransaksi {
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmss");
 
+    /** Generate unique kode transaksi e.g. TRX-20260524143022-001 */
     public String generateKodeTransaksi() {
         return "TRX-" + SDF.format(new Date());
     }
 
-    // >>> PERBAIKAN SINKRONISASI: Mengamankan return type boolean untuk mendeteksi kesuksesan transaksi atomik
-    public boolean insert(ModelTransaksi trx) {
+    /**
+     * Simpan transaksi beserta semua detail dan update stok produk.
+     * Multithreading: DB operations are intentionally kept atomic here via
+     * single Connection; the caller (ControllerTransaksi) runs this in a
+     * SwingWorker background thread.
+     *
+     * @return saved transaksi with id set, or null on failure
+     */
+    public ModelTransaksi simpanTransaksi(ModelTransaksi trx) {
         Connection conn = Connector.Connect();
         try {
             conn.setAutoCommit(false);
@@ -43,13 +55,12 @@ public class DAOTransaksi {
             trx.setId(idTrx);
             psTrx.close();
 
-            // 2) Insert detail + update stok fisik produk
+            // 2) Insert detail + update stok
             String sqlDetail = "INSERT INTO detail_transaksi (id_transaksi,id_produk,nama_produk,harga_jual,jumlah,subtotal) VALUES (?,?,?,?,?,?)";
             String sqlStok   = "UPDATE produk SET stok = stok - ? WHERE id=? AND stok >= ?";
             String sqlLog    = "INSERT INTO log_stok (id_produk,id_user,jenis,jumlah,stok_sebelum,stok_sesudah,keterangan) " +
                                "SELECT id, ?, 'keluar', ?, stok+?, stok, ? FROM produk WHERE id=?";
 
-            // Menggunakan method getDetailList() yang ada di ModelTransaksi.java
             for (ModelDetailTransaksi d : trx.getDetailList()) {
                 PreparedStatement psDetail = conn.prepareStatement(sqlDetail);
                 psDetail.setInt(1, idTrx);
@@ -68,7 +79,7 @@ public class DAOTransaksi {
                 int rows = psStok.executeUpdate();
                 if (rows == 0) {
                     conn.rollback();
-                    throw new SQLException("Stok tidak cukup untuk produk: " + d.getNamaProduk());
+                    throw new SQLException("Stok tidak cukup untuk: " + d.getNamaProduk());
                 }
                 psStok.close();
 
@@ -84,21 +95,22 @@ public class DAOTransaksi {
 
             conn.commit();
             conn.setAutoCommit(true);
-            return true;
+            return trx;
 
         } catch (SQLException e) {
-            System.err.println("[DAOTransaksi.insert] " + e.getMessage());
+            System.err.println("[DAOTransaksi.simpan] " + e.getMessage());
             try { conn.rollback(); conn.setAutoCommit(true); } catch (SQLException ignored) {}
-            return false;
+            throw new RuntimeException(e.getMessage());
         }
     }
 
-    public List<ModelTransaksi> getAll() {
+    public List<ModelTransaksi> getRiwayat(int limit) {
         List<ModelTransaksi> list = new ArrayList<>();
         String sql = "SELECT t.*, u.nama_lengkap AS nama_user FROM transaksi t " +
-                     "JOIN users u ON t.id_user = u.id ORDER BY t.created_at DESC";
-        try (Statement st = Connector.Connect().createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                     "JOIN users u ON t.id_user = u.id ORDER BY t.created_at DESC LIMIT ?";
+        try (PreparedStatement ps = Connector.Connect().prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 ModelTransaksi t = new ModelTransaksi();
                 t.setId(rs.getInt("id"));
@@ -113,7 +125,7 @@ public class DAOTransaksi {
                 list.add(t);
             }
         } catch (SQLException e) {
-            System.err.println("[DAOTransaksi.getAll] " + e.getMessage());
+            System.err.println("[DAOTransaksi.getRiwayat] " + e.getMessage());
         }
         return list;
     }
@@ -136,7 +148,7 @@ public class DAOTransaksi {
                 list.add(d);
             }
         } catch (SQLException e) {
-            System.err.println("[DAOTransaksi.getDetailByTransaksi] " + e.getMessage());
+            System.err.println("[DAOTransaksi.getDetail] " + e.getMessage());
         }
         return list;
     }

@@ -20,7 +20,6 @@ public class ModelTransaksi {
     private String  catatan;
     private Date    createdAt;
 
-    // Encapsulated List penampung detail item belanja
     private List<ModelDetailTransaksi> detailList = new ArrayList<>();
 
     public ModelTransaksi() { this.status = "selesai"; }
@@ -56,13 +55,8 @@ public class ModelTransaksi {
     public Date    getCreatedAt()               { return createdAt; }
     public void    setCreatedAt(Date d)         { this.createdAt = d; }
 
-    // Getter untuk menarik koleksi List Detail belanja secara utuh ke JDialog Riwayat
     public List<ModelDetailTransaksi> getDetailList() { return detailList; }
-    
-    // >>> PERBAIKAN SINKRONISASI: Menggunakan method addDetail bertipe parameter class ModelDetailTransaksi tunggal
-    public void addDetail(ModelDetailTransaksi d) { 
-        detailList.add(d); 
-    }
+    public void addDetail(ModelDetailTransaksi d)      { detailList.add(d); }
 
     public void hitungTotalDanKembalian() {
         totalHarga = detailList.stream().mapToDouble(ModelDetailTransaksi::getSubtotal).sum();
