@@ -30,12 +30,10 @@ public class MenuView extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // ── Root ─────────────────────────────────────────────────────────────
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Header ───────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(MetroTheme.BG_SURFACE);
         header.setBorder(new EmptyBorder(20, 28, 20, 28));
@@ -56,7 +54,6 @@ public class MenuView extends JFrame {
         root.add(accentBar, BorderLayout.NORTH);
         root.add(header, BorderLayout.NORTH);
 
-        // Rebuild – accent strip must be first
         root.removeAll();
         JPanel topWrap = new JPanel(new BorderLayout());
         topWrap.setBackground(MetroTheme.BG_DARK);
@@ -67,7 +64,6 @@ public class MenuView extends JFrame {
         topWrap.add(header, BorderLayout.CENTER);
         root.add(topWrap, BorderLayout.NORTH);
 
-        // ── Menu tiles ────────────────────────────────────────────────────────
         JPanel tilesArea = new JPanel();
         tilesArea.setLayout(new BoxLayout(tilesArea, BoxLayout.Y_AXIS));
         tilesArea.setBackground(MetroTheme.BG_DARK);
@@ -114,7 +110,6 @@ public class MenuView extends JFrame {
         setVisible(true);
     }
 
-    /** A full-width tile button with icon + title + subtitle */
     private JPanel tile(String icon, String title, String subtitle, Color bg, ActionListener al) {
         JPanel tile = new JPanel(new BorderLayout(14, 0)) {
             @Override

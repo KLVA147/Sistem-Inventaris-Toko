@@ -49,7 +49,6 @@ public class TransaksiView extends JFrame {
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Header ─────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(MetroTheme.BG_SURFACE);
         header.setBorder(new EmptyBorder(12, 20, 12, 20));
@@ -65,7 +64,6 @@ public class TransaksiView extends JFrame {
         header.add(hRight, BorderLayout.EAST);
         root.add(header, BorderLayout.NORTH);
 
-        // ── Cart table (center) ───────────────────────────────────────────
         String[] kolom = {"#", "Nama Produk", "Harga", "Jumlah", "Subtotal"};
         keranjangModel = new DefaultTableModel(kolom, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -93,7 +91,6 @@ public class TransaksiView extends JFrame {
         cartWrap.add(cartPanel, BorderLayout.CENTER);
         root.add(cartWrap, BorderLayout.CENTER);
 
-        // ── Right sidebar ─────────────────────────────────────────────────
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBackground(MetroTheme.BG_SURFACE);
@@ -102,7 +99,6 @@ public class TransaksiView extends JFrame {
             new EmptyBorder(16, 16, 16, 16)));
         rightPanel.setPreferredSize(new Dimension(300, 0));
 
-        // Search section
         rightPanel.add(sectionLabel("📦  Cari Produk"));
         rightPanel.add(Box.createVerticalStrut(8));
         rightPanel.add(fieldRow("Kode:", inputKode));
@@ -134,7 +130,6 @@ public class TransaksiView extends JFrame {
         rightPanel.add(MetroTheme.accentSeparator());
         rightPanel.add(Box.createVerticalStrut(16));
 
-        // Payment section
         rightPanel.add(sectionLabel("💳  Pembayaran"));
         rightPanel.add(Box.createVerticalStrut(10));
 
@@ -155,12 +150,10 @@ public class TransaksiView extends JFrame {
 
         root.add(rightPanel, BorderLayout.EAST);
 
-        // Style inputs
         MetroTheme.styleTextField(inputKode);
         MetroTheme.styleTextField(inputJumlah);
         MetroTheme.styleTextField(inputBayar);
 
-        // ── Events ─────────────────────────────────────────────────────────
         ActionListener cariAction = e -> cariProduk();
         btnCariProduk.addActionListener(cariAction);
         inputKode.addActionListener(cariAction);

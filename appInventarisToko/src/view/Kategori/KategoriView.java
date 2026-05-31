@@ -41,7 +41,6 @@ public class KategoriView extends JFrame {
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Header ─────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout(12, 0));
         header.setBackground(MetroTheme.BG_SURFACE);
         header.setBorder(new EmptyBorder(12, 20, 12, 20));
@@ -59,7 +58,6 @@ public class KategoriView extends JFrame {
         header.add(hRight, BorderLayout.EAST);
         root.add(header, BorderLayout.NORTH);
 
-        // ── Toolbar ────────────────────────────────────────────────────────
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         toolbar.setBackground(MetroTheme.BG_DARK);
         toolbar.setBorder(new EmptyBorder(4, 12, 4, 12));
@@ -73,7 +71,6 @@ public class KategoriView extends JFrame {
         toolbar.add(btnCari);
         toolbar.add(btnReset);
 
-        // ── Table ──────────────────────────────────────────────────────────
         String[] kolom = {"ID", "Nama Kategori", "Deskripsi"};
         tableModel = new DefaultTableModel(kolom, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -89,7 +86,6 @@ public class KategoriView extends JFrame {
         center.add(MetroTheme.styledScrollPane(table), BorderLayout.CENTER);
         root.add(center, BorderLayout.CENTER);
 
-        // ── Form panel (south) ─────────────────────────────────────────────
         JPanel south = new JPanel(new BorderLayout());
         south.setBackground(MetroTheme.BG_SURFACE);
         south.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, MetroTheme.BORDER));
@@ -129,7 +125,6 @@ public class KategoriView extends JFrame {
         south.add(btnPanel, BorderLayout.SOUTH);
         root.add(south, BorderLayout.SOUTH);
 
-        // ── Events ─────────────────────────────────────────────────────────
         table.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();

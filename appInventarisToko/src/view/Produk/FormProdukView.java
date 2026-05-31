@@ -43,7 +43,6 @@ public class FormProdukView extends JFrame {
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Header ────────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(MetroTheme.BG_SURFACE);
         header.setBorder(new EmptyBorder(14, 20, 14, 20));
@@ -55,7 +54,6 @@ public class FormProdukView extends JFrame {
             BorderLayout.CENTER);
         root.add(header, BorderLayout.NORTH);
 
-        // ── Form ──────────────────────────────────────────────────────────────
         List<ModelKategori> kategoriList = ctrlKategori.getAll();
         for (ModelKategori k : kategoriList) comboKat.addItem(k);
 
@@ -76,7 +74,6 @@ public class FormProdukView extends JFrame {
             inputDesk.setText(editProduk.getDeskripsi() != null ? editProduk.getDeskripsi() : "");
         }
 
-        // Style all fields
         for (JTextField f : new JTextField[]{inputKode, inputNama, inputHargaBeli,
                 inputHargaJual, inputStok, inputStokMin, inputSatuan}) {
             MetroTheme.styleTextField(f);
@@ -113,7 +110,6 @@ public class FormProdukView extends JFrame {
         formScroll.getViewport().setBackground(MetroTheme.BG_DARK);
         root.add(formScroll, BorderLayout.CENTER);
 
-        // ── Buttons ───────────────────────────────────────────────────────────
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         btnPanel.setBackground(MetroTheme.BG_SURFACE);
         btnPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, MetroTheme.BORDER));

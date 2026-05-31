@@ -43,7 +43,6 @@ public class ProdukView extends JFrame {
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Header bar ────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(MetroTheme.BG_SURFACE);
         header.setBorder(new EmptyBorder(12, 20, 12, 20));
@@ -56,7 +55,6 @@ public class ProdukView extends JFrame {
         JLabel titleLbl = MetroTheme.titleLabel("📦  Kelola Produk");
         header.add(titleLbl, BorderLayout.WEST);
 
-        // Action buttons (top-right)
         JPanel actionBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actionBtns.setOpaque(false);
         JButton btnTambah     = MetroTheme.primaryButton("+ Tambah");
@@ -73,7 +71,6 @@ public class ProdukView extends JFrame {
 
         root.add(header, BorderLayout.NORTH);
 
-        // ── Toolbar (search) ──────────────────────────────────────────────────
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         toolbar.setBackground(MetroTheme.BG_DARK);
         toolbar.setBorder(new EmptyBorder(0, 12, 0, 12));
@@ -102,7 +99,6 @@ public class ProdukView extends JFrame {
 
         root.add(toolbar, BorderLayout.CENTER);
 
-        // ── Table ─────────────────────────────────────────────────────────────
         tableModel = new ModelTableProduk(ctrlProduk.getAll());
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -131,7 +127,6 @@ public class ProdukView extends JFrame {
 
         JScrollPane scrollPane = MetroTheme.styledScrollPane(table);
 
-        // ── Legend ────────────────────────────────────────────────────────────
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
         legendPanel.setBackground(MetroTheme.BG_DARK);
         JLabel legendColor = new JLabel("█");
@@ -147,11 +142,9 @@ public class ProdukView extends JFrame {
         centerWrap.add(scrollPane, BorderLayout.CENTER);
         centerWrap.add(legendPanel, BorderLayout.SOUTH);
 
-        // Override center
         root.remove(toolbar);
         root.add(centerWrap, BorderLayout.CENTER);
 
-        // ── Events ───────────────────────────────────────────────────────────
         btnCari.addActionListener(e -> {
             String kw = inputCari.getText().trim();
             ModelKategori kat = (ModelKategori) comboCari.getSelectedItem();

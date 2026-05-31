@@ -26,18 +26,15 @@ public class LoginView extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // ── Root ────────────────────────────────────────────────────────────
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Accent strip top ─────────────────────────────────────────────────
         JPanel strip = new JPanel();
         strip.setBackground(MetroTheme.ACCENT);
         strip.setPreferredSize(new Dimension(0, 4));
         root.add(strip, BorderLayout.NORTH);
 
-        // ── Card ─────────────────────────────────────────────────────────────
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(MetroTheme.BG_SURFACE);
         card.setBorder(new EmptyBorder(36, 44, 36, 44));
@@ -47,7 +44,6 @@ public class LoginView extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(4, 0, 4, 0);
 
-        // Title
         JLabel icon = new JLabel("🛒", JLabel.CENTER);
         icon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 32));
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
@@ -64,7 +60,6 @@ public class LoginView extends JFrame {
         gbc.gridy = 2; gbc.insets = new Insets(0, 0, 24, 0);
         card.add(sub, gbc);
 
-        // Fields
         gbc.gridwidth = 1; gbc.insets = new Insets(5, 0, 5, 0);
 
         gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0.28;
@@ -79,7 +74,6 @@ public class LoginView extends JFrame {
         MetroTheme.stylePasswordField(inputPassword);
         card.add(inputPassword, gbc);
 
-        // Login button
         JButton btnLogin = MetroTheme.primaryButton("  Masuk  ");
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 15));
         gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;

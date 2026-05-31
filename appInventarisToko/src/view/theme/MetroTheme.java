@@ -10,13 +10,8 @@ import javax.swing.border.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.table.*;
 
-/**
- * Metro / Fluent Design theme for Sistem Inventaris Toko.
- * Only visual styling — no business logic touched.
- */
 public class MetroTheme {
 
-    // ── Palette ────────────────────────────────────────────────────────────
     public static final Color BG_DARK       = new Color(0x1E1E2E);   // main window bg
     public static final Color BG_SURFACE    = new Color(0x28283D);   // panels
     public static final Color BG_CARD       = new Color(0x313150);   // cards / form panels
@@ -38,7 +33,6 @@ public class MetroTheme {
     public static final Color BORDER_FOCUS   = ACCENT;
     public static final Color LOW_STOCK_BG   = new Color(0x3A1A1A);  // subtle red tint
 
-    // ── Fonts ──────────────────────────────────────────────────────────────
     public static final Font FONT_TITLE   = new Font("Segoe UI", Font.BOLD,   20);
     public static final Font FONT_HEADING = new Font("Segoe UI", Font.BOLD,   14);
     public static final Font FONT_BODY    = new Font("Segoe UI", Font.PLAIN,  13);
@@ -47,7 +41,6 @@ public class MetroTheme {
     public static final Font FONT_BTN     = new Font("Segoe UI", Font.BOLD,   13);
     public static final Font FONT_TOTAL   = new Font("Segoe UI", Font.BOLD,   22);
 
-    // ── Global install ──────────────────────────────────────────────────────
     public static void install() {
         // Force Nimbus as base then override, or just let Metal be and paint over
         UIManager.put("Panel.background",          BG_SURFACE);
@@ -108,12 +101,10 @@ public class MetroTheme {
         UIManager.put("OptionPane.buttonFont",     FONT_BTN);
     }
 
-    // ── Frame setup ─────────────────────────────────────────────────────────
     public static void styleFrame(JFrame frame) {
         frame.getContentPane().setBackground(BG_DARK);
     }
 
-    // ── Panels ──────────────────────────────────────────────────────────────
     public static JPanel surfacePanel() {
         JPanel p = new JPanel();
         p.setBackground(BG_SURFACE);
@@ -127,7 +118,6 @@ public class MetroTheme {
         return p;
     }
 
-    // ── Labels ──────────────────────────────────────────────────────────────
     public static JLabel titleLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(FONT_TITLE);
@@ -156,23 +146,19 @@ public class MetroTheme {
         return l;
     }
 
-    // ── Buttons ─────────────────────────────────────────────────────────────
-    /** Primary accent button (blue) */
+
     public static JButton primaryButton(String text) {
         return makeBtn(text, ACCENT, Color.WHITE, ACCENT_HOVER);
     }
 
-    /** Success button (green) */
     public static JButton successButton(String text) {
         return makeBtn(text, ACCENT_GREEN, Color.WHITE, new Color(0x148B14));
     }
 
-    /** Danger button (red) */
     public static JButton dangerButton(String text) {
         return makeBtn(text, ACCENT_RED, Color.WHITE, new Color(0xD81429));
     }
 
-    /** Neutral / ghost button */
     public static JButton ghostButton(String text) {
         return makeBtn(text, BG_CARD, TEXT_PRIMARY, new Color(0x3E3E5A));
     }
@@ -202,7 +188,6 @@ public class MetroTheme {
         return btn;
     }
 
-    // ── Inputs ──────────────────────────────────────────────────────────────
     public static void styleTextField(JTextField f) {
         f.setBackground(BG_INPUT);
         f.setForeground(TEXT_PRIMARY);
@@ -249,7 +234,6 @@ public class MetroTheme {
         });
     }
 
-    // ── Table ───────────────────────────────────────────────────────────────
     public static void styleTable(JTable table) {
         table.setBackground(BG_TABLE_ROW);
         table.setForeground(TEXT_PRIMARY);
@@ -282,7 +266,6 @@ public class MetroTheme {
         return sp;
     }
 
-    // ── Accent divider ───────────────────────────────────────────────────────
     public static JSeparator accentSeparator() {
         JSeparator sep = new JSeparator();
         sep.setForeground(ACCENT);
@@ -291,7 +274,6 @@ public class MetroTheme {
         return sep;
     }
 
-    // ── Titled card border ────────────────────────────────────────────────────
     public static Border cardBorder(String title) {
         TitledBorder tb = BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(BORDER, 1), " " + title + " ");

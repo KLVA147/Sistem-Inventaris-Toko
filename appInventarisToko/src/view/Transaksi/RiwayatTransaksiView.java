@@ -40,7 +40,6 @@ public class RiwayatTransaksiView extends JFrame {
         root.setBackground(MetroTheme.BG_DARK);
         setContentPane(root);
 
-        // ── Header ─────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout(12, 0));
         header.setBackground(MetroTheme.BG_SURFACE);
         header.setBorder(new EmptyBorder(12, 20, 12, 20));
@@ -61,7 +60,6 @@ public class RiwayatTransaksiView extends JFrame {
         header.add(hBtns, BorderLayout.EAST);
         root.add(header, BorderLayout.NORTH);
 
-        // ── Table ──────────────────────────────────────────────────────────
         String[] kolom = {"ID", "Kode Transaksi", "Kasir", "Total", "Bayar", "Kembalian", "Status", "Waktu"};
         tableModel = new DefaultTableModel(kolom, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
@@ -76,7 +74,6 @@ public class RiwayatTransaksiView extends JFrame {
         tableWrap.add(MetroTheme.styledScrollPane(table), BorderLayout.CENTER);
         root.add(tableWrap, BorderLayout.CENTER);
 
-        // ── Events ─────────────────────────────────────────────────────────
         btnRefresh.addActionListener(e -> loadData());
         btnMenu.addActionListener(e -> { dispose(); new MenuView(user); });
 
