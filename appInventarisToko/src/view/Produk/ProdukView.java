@@ -35,7 +35,71 @@ public class ProdukView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+<<<<<<< Updated upstream
         // Table
+=======
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(MetroTheme.BG_DARK);
+        setContentPane(root);
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(MetroTheme.BG_SURFACE);
+        header.setBorder(new EmptyBorder(12, 20, 12, 20));
+
+        JPanel accentStrip = new JPanel();
+        accentStrip.setBackground(MetroTheme.ACCENT);
+        accentStrip.setPreferredSize(new Dimension(0, 4));
+        header.add(accentStrip, BorderLayout.NORTH);
+
+        JLabel titleLbl = MetroTheme.titleLabel("📦  Kelola Produk");
+        titleLbl.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+        header.add(titleLbl, BorderLayout.WEST);
+
+        JPanel actionBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        actionBtns.setOpaque(false);
+        JButton btnTambah     = MetroTheme.primaryButton("+ Tambah");
+        JButton btnEdit       = MetroTheme.ghostButton("✏ Edit");
+        JButton btnHapus      = MetroTheme.dangerButton("🗑 Hapus");
+        JButton btnTambahStok = MetroTheme.ghostButton("📥 Stok Masuk");
+        JButton btnMenu       = MetroTheme.ghostButton("← Menu");
+        actionBtns.add(btnMenu);
+        actionBtns.add(btnTambah);
+        actionBtns.add(btnEdit);
+        actionBtns.add(btnHapus);
+        actionBtns.add(btnTambahStok);
+        header.add(actionBtns, BorderLayout.EAST);
+
+        root.add(header, BorderLayout.NORTH);
+
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        toolbar.setBackground(MetroTheme.BG_DARK);
+        toolbar.setBorder(new EmptyBorder(0, 12, 0, 12));
+
+        MetroTheme.styleTextField(inputCari);
+        inputCari.setPreferredSize(new Dimension(200, 32));
+        MetroTheme.styleComboBox(comboCari);
+
+        ModelKategori semua = new ModelKategori();
+        semua.setNama("— Semua Kategori —");
+        semua.setId(0);
+        comboCari.addItem(semua);
+        for (ModelKategori k : ctrlKategori.getAll()) comboCari.addItem(k);
+
+        JButton btnCari   = MetroTheme.primaryButton("Cari");
+        JButton btnReset  = MetroTheme.ghostButton("Reset");
+        JButton btnRendah = MetroTheme.ghostButton("⚠ Stok Rendah");
+
+        toolbar.add(MetroTheme.bodyLabel("Cari:"));
+        toolbar.add(inputCari);
+        toolbar.add(MetroTheme.bodyLabel("Kategori:"));
+        toolbar.add(comboCari);
+        toolbar.add(btnCari);
+        toolbar.add(btnReset);
+        toolbar.add(btnRendah);
+
+        root.add(toolbar, BorderLayout.CENTER);
+
+>>>>>>> Stashed changes
         tableModel = new ModelTableProduk(ctrlProduk.getAll());
         table = new JTable(tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
